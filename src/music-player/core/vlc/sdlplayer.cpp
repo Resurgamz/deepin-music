@@ -202,9 +202,12 @@ SdlPlayer::~SdlPlayer()
 
 void SdlPlayer::open(VlcMedia *media)
 {
+    qWarning() << __func__ << "enter";
     //防止没打开文件
-    if (media->core() == nullptr)
+    if (media->core() == nullptr) {
+        qWarning() << __func__ << "media->core() is null, return";
         return;
+    }
 
     if (m_loadSdlLibrary) {
         SDL_GetAudioStatus_function GetAudioStatus = (SDL_GetAudioStatus_function)VlcDynamicInstance::VlcFunctionInstance()->resolveSdlSymbol("SDL_GetAudioStatus");
@@ -233,9 +236,12 @@ void SdlPlayer::open(VlcMedia *media)
         m_sinkInputPath.clear();
     }
 
+    qWarning() << __func__ << "calling VlcMediaPlayer::open";
     VlcMediaPlayer::open(media);
+    qWarning() << __func__ << "VlcMediaPlayer::open done";
     g_playbackStatus = PLAYBACK_STATUS_INIT;
     g_dataCache = 0;
+    qWarning() << __func__ << "exit";
 }
 
 void SdlPlayer::play()

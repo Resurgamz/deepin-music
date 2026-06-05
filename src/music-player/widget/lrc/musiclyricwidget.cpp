@@ -123,12 +123,15 @@ MusicLyricWidget::~MusicLyricWidget()
 void MusicLyricWidget::updateUI()
 {
     MediaMeta meta = Player::getInstance()->getActiveMeta();
+    qWarning() << "MusicLyricWidget::updateUI enter hash:" << meta.hash;
     QFileInfo coverInfo(Global::cacheDir() + "/images/" + meta.hash + ".jpg");
     QPixmap cover;
     if (coverInfo.exists()) {
         if (Global::playbackEngineType() == 1) {
             // 不使用缩略图,使用原图,更加清晰
+            qWarning() << "MusicLyricWidget::updateUI calling getCoverDataPixmap engineType:1";
             cover = MetaDetector::getCoverDataPixmap(meta, Global::playbackEngineType());
+            qWarning() << "MusicLyricWidget::updateUI getCoverDataPixmap done, isNull:" << cover.isNull();
         } else {
             cover = QPixmap(coverInfo.filePath()); //如果是gstreamer播放器，直接读取缓存
         }
@@ -154,6 +157,7 @@ void MusicLyricWidget::updateUI()
 
     m_backgroundW->setSourceImage(coverImage);
     m_backgroundW->update();
+    qWarning() << "MusicLyricWidget::updateUI exit";
 }
 
 void MusicLyricWidget::showAnimation()
@@ -217,6 +221,7 @@ void MusicLyricWidget::onProgressChanged(qint64 value, qint64 /*length*/)
 void MusicLyricWidget::onMusicPlayed(MediaMeta meta)
 {
     Q_UNUSED(meta)
+    qWarning() << "MusicLyricWidget::onMusicPlayed enter hash:" << meta.hash;
     QFileInfo fileInfo(Player::getInstance()->getActiveMeta().localPath);
     QString lrcPath = fileInfo.dir().path() + QDir::separator() + fileInfo.completeBaseName() + ".lrc";
     QFile file(lrcPath);
@@ -228,12 +233,15 @@ void MusicLyricWidget::onMusicPlayed(MediaMeta meta)
         m_lyricview->show();
     }
     m_lyricview->getFromFile(lrcPath);
+    qWarning() << "MusicLyricWidget::onMusicPlayed exit";
 }
 
 void MusicLyricWidget::onCoverChanged(MediaMeta meta)
 {
     Q_UNUSED(meta)
+    qWarning() << "MusicLyricWidget::onCoverChanged enter hash:" << meta.hash;
     this->updateUI();
+    qWarning() << "MusicLyricWidget::onCoverChanged exit";
 }
 
 void MusicLyricWidget::setThemeType(int type)

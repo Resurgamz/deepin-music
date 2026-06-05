@@ -182,8 +182,14 @@ int main(int argc, char *argv[])
     createSpeechDbus();
 
     app->setQuitOnLastWindowClosed(false);
+    qWarning() << "main: app starting event loop";
+    QObject::connect(app, &QApplication::aboutToQuit, []() {
+        qWarning() << "APP aboutToQuit: application is quitting";
+    });
     int status = app->exec();
+    qWarning() << "main: app event loop exited with status:" << status;
     Player::getInstance()->releasePlayer();
+    qWarning() << "main: app exiting";
 
     return status;
 }

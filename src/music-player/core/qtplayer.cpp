@@ -88,10 +88,12 @@ PlayerBase::PlayState QtPlayer::state()
 
 void QtPlayer::play()
 {
+    qWarning() << __func__ << "enter path:" << m_activeMeta.localPath;
     init();
     // 因为此引擎是通过sinkinput通道控制音量的，所以首先设置为最小音量，后面再设置为正确音量，防止破音。
     setSinkInputAlmostMute();
     m_mediaPlayer->play();
+    qWarning() << __func__ << "exit";
 }
 
 void QtPlayer::pause()
@@ -142,8 +144,12 @@ qint64 QtPlayer::time()
 
 void QtPlayer::setMediaMeta(MediaMeta meta)
 {
+    qWarning() << __func__ << "enter path:" << meta.localPath;
     init();
-    if (m_activeMeta.hash == meta.hash) return;
+    if (m_activeMeta.hash == meta.hash) {
+        qWarning() << __func__ << "same hash, skip";
+        return;
+    }
 
     m_activeMeta = meta;
     bool value = m_activeMeta.mmType == MIMETYPE_CDA ? false : true;
@@ -153,6 +159,7 @@ void QtPlayer::setMediaMeta(MediaMeta meta)
         m_mediaPlayer->setMedia(QUrl::fromUserInput(m_activeMeta.localPath));
     }
     m_mediaPlayer->setVolume(MusicSettings::value("base.play.volume").toInt());
+    qWarning() << __func__ << "exit";
 }
 
 bool QtPlayer::getMute()

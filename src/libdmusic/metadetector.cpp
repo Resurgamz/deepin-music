@@ -136,6 +136,7 @@ QList<QByteArray> MetaDetector::detectEncodings(const MediaMeta &meta)
 
 QString MetaDetector::getAudioType(MediaMeta meta)
 {
+    qWarning() << "getAudioType enter path:" << meta.localPath;
     QString audioType;
     format_alloc_context_function format_alloc_context = (format_alloc_context_function)FfmpegDynamicInstance::VlcFunctionInstance()->resolveSymbol("avformat_alloc_context", true);
     format_open_input_function format_open_input = (format_open_input_function)FfmpegDynamicInstance::VlcFunctionInstance()->resolveSymbol("avformat_open_input", true);
@@ -161,6 +162,7 @@ QString MetaDetector::getAudioType(MediaMeta meta)
     }
     format_close_input(&pFormatCtx);
     format_free_context(pFormatCtx);
+    qWarning() << "getAudioType exit audioType:" << audioType;
     return audioType;
 }
 
@@ -406,6 +408,7 @@ void MetaDetector::getCoverData(const QString &path, const QString &tmpPath, con
 // 获取音乐封面图片原图
 QPixmap MetaDetector::getCoverDataPixmap(MediaMeta meta, int engineType)
 {
+    qWarning() << "getCoverDataPixmap enter engineType:" << engineType << "path:" << meta.localPath;
     QPixmap pixmap;
     if (engineType == 1) {
         format_alloc_context_function format_alloc_context = (format_alloc_context_function)FfmpegDynamicInstance::VlcFunctionInstance()->resolveSymbol("avformat_alloc_context", true);
@@ -414,7 +417,8 @@ QPixmap MetaDetector::getCoverDataPixmap(MediaMeta meta, int engineType)
         format_free_context_function format_free_context = (format_free_context_function)FfmpegDynamicInstance::VlcFunctionInstance()->resolveSymbol("avformat_free_context", true);
 
         AVFormatContext *pFormatCtx = format_alloc_context();
-        format_open_input(&pFormatCtx, meta.localPath.toUtf8().data(), nullptr, nullptr);
+        int openRet = format_open_input(&pFormatCtx, meta.localPath.toUtf8().data(), nullptr, nullptr);
+        qWarning() << "getCoverDataPixmap avformat_open_input ret:" << openRet << "pFormatCtx:" << (void *)pFormatCtx;
 
         QImage image;
         if (pFormatCtx) {
@@ -423,15 +427,19 @@ QPixmap MetaDetector::getCoverDataPixmap(MediaMeta meta, int engineType)
                     if (pFormatCtx->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC) {
                         AVPacket pkt = pFormatCtx->streams[i]->attached_pic;
                         image = QImage::fromData(static_cast<uchar *>(pkt.data), pkt.size);
+                        qWarning() << "getCoverDataPixmap found attached_pic at stream:" << i;
                         break;
                     }
                 }
+            } else {
+                qWarning() << "getCoverDataPixmap iformat is null or read_header failed, iformat:" << (void *)pFormatCtx->iformat;
             }
         }
 
         format_close_input(&pFormatCtx);
         format_free_context(pFormatCtx);
         pixmap = QPixmap::fromImage(image);
+        qWarning() << "getCoverDataPixmap exit image.isNull:" << image.isNull() << "pixmap.isNull:" << pixmap.isNull();
     } else {
 #ifdef _WIN32
         TagLib::MPEG::File f(meta.localPath.toStdWString().c_str());

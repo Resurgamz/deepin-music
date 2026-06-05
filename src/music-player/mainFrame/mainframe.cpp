@@ -994,6 +994,7 @@ void MainFrame::slotPlayFromFileMaganager()
         return;
     }
     Player::getInstance()->playMeta(mt);
+    qWarning() << "----------slotPlayFromFileMaganager playMeta returned:" << path;
     Player::getInstance()->setCurrentPlayListHash("all", true);
     // 通知播放队列列表改变
     emit Player::getInstance()->signalPlayListChanged();
@@ -1202,6 +1203,7 @@ void MainFrame::resizeEvent(QResizeEvent *e)
 
 void MainFrame::closeEvent(QCloseEvent *event)
 {
+    qWarning() << "closeEvent enter";
     MusicSettings::setOption("base.play.volume", Player::getInstance()->getVolume());
     //保存进度
     auto curPosition = Player::getInstance()->getActiveMeta().offset;
@@ -1221,8 +1223,10 @@ void MainFrame::closeEvent(QCloseEvent *event)
         MusicSettings::setOption("base.play.last_playlist", "all");
     }
     auto askCloseAction = MusicSettings::value("base.close.close_action").toInt();
+    qWarning() << "closeEvent askCloseAction:" << askCloseAction;
     switch (askCloseAction) {
     case 0: {
+        qWarning() << "closeEvent case 0: hide to tray";
         MusicSettings::setOption("base.close.is_close", false);
         break;
     }
@@ -1231,6 +1235,7 @@ void MainFrame::closeEvent(QCloseEvent *event)
         MusicSettings::setOption("base.close.is_close", true);
 //        MusicSettings::release();
         //退出时,stop当前音乐
+        qWarning() << "closeEvent case 1: quit app";
         Player::getInstance()->stop(false);
         qApp->processEvents();
         qApp->quit();
@@ -1244,6 +1249,7 @@ void MainFrame::closeEvent(QCloseEvent *event)
         auto clickedButtonIndex = ccd.exec();
         // 1 is confirm button
         if (1 != clickedButtonIndex) {
+            qWarning() << "closeEvent case 2: user cancelled close";
             event->ignore();
             return;
         }
@@ -1254,11 +1260,13 @@ void MainFrame::closeEvent(QCloseEvent *event)
             MusicSettings::setOption("base.close.is_close", true);
 //            MusicSettings::release();
             //退出时,stop当前音乐
+            qWarning() << "closeEvent case 2: user confirmed quit";
             Player::getInstance()->stop(false);
             qApp->processEvents();
             qApp->quit();
         } else {
             MusicSettings::setOption("base.close.is_close", false);
+            qWarning() << "closeEvent case 2: user chose hide";
         }
         break;
     }
@@ -1272,6 +1280,7 @@ void MainFrame::closeEvent(QCloseEvent *event)
     }
     this->setFocus();
     m_preMaxFlag = isMaximized();
+    qWarning() << "closeEvent DMainWindow::closeEvent";
     DMainWindow::closeEvent(event);
 }
 

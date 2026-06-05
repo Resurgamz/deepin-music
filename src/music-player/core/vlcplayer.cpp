@@ -141,11 +141,13 @@ void VlcPlayer::startCdaThread()
 
 void VlcPlayer::play()
 {
-    qInfo() << __func__;
+    qWarning() << __func__ << "m_bApe:" << m_bApe;
     if(m_bApe) {
+        qWarning() << __func__ << "APE branch: delegate to QtPlayer::play";
         return m_qtPlayer->play();
     }
     init();
+    qWarning() << __func__ << "VLC branch: delegate to SdlPlayer::play";
     m_qvplayer->play();
 }
 
@@ -252,11 +254,14 @@ void VlcPlayer::setMediaMeta(MediaMeta meta)
 {
     init();
     m_activeMeta = meta;
+    qWarning() << __func__ << "enter path:" << meta.localPath;
     bool newIsApe = (MetaDetector::getInstance()->getAudioType(meta).toLower() == "ape");
     bool engineChanged = (m_bApe != newIsApe);
+    qWarning() << __func__ << "newIsApe:" << newIsApe << "m_bApe(was):" << m_bApe << "engineChanged:" << engineChanged;
 
     m_bApe = newIsApe;
     if(m_bApe) {
+        qWarning() << __func__ << "APE branch: switching to QtPlayer";
         m_qvplayer->stop();
         connect(m_qtPlayer, &PlayerBase::timeChanged, this, &PlayerBase::timeChanged);
         connect(m_qtPlayer, &PlayerBase::positionChanged, this, &PlayerBase::positionChanged);
@@ -264,7 +269,9 @@ void VlcPlayer::setMediaMeta(MediaMeta meta)
         connect(m_qtPlayer, &PlayerBase::end, this, &PlayerBase::end);
         connect(m_qtPlayer, &PlayerBase::sigSendCdaStatus, this, &PlayerBase::sigSendCdaStatus);
         m_qtPlayer->setMediaMeta(meta);
+        qWarning() << __func__ << "APE branch: QtPlayer setMediaMeta done";
     } else {
+        qWarning() << __func__ << "VLC branch: switching to VlcPlayer/SdlPlayer";
         m_qtPlayer->stop();
         disconnect(m_qtPlayer, &PlayerBase::timeChanged, this, &PlayerBase::timeChanged);
         disconnect(m_qtPlayer, &PlayerBase::positionChanged, this, &PlayerBase::positionChanged);
@@ -273,6 +280,7 @@ void VlcPlayer::setMediaMeta(MediaMeta meta)
         disconnect(m_qtPlayer, &PlayerBase::sigSendCdaStatus, this, &PlayerBase::sigSendCdaStatus);
         m_qvmedia->initMedia(meta.localPath, meta.mmType == MIMETYPE_CDA ? false : true, m_qvinstance, meta.track);
         m_qvplayer->open(m_qvmedia);
+        qWarning() << __func__ << "VLC branch: initMedia+open done";
     }
 
     if (engineChanged) {
@@ -291,6 +299,7 @@ void VlcPlayer::setMediaMeta(MediaMeta meta)
             m_qvplayer->setMute(isMuted);
         }
     }
+    qWarning() << __func__ << "exit";
 }
 
 void VlcPlayer::setFadeInOutFactor(double fadeInOutFactor)

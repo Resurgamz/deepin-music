@@ -223,9 +223,13 @@ void Player::playMeta(MediaMeta meta)
         }
 
         m_ActiveMeta = meta;
+        qWarning() << __func__ << "step1:setActiveMeta" << meta.localPath;
         setActiveMeta(meta);
+        qWarning() << __func__ << "step2:setMediaMeta" << meta.localPath;
         m_basePlayer->setMediaMeta(meta);
+        qWarning() << __func__ << "step3:play" << meta.localPath;
         m_basePlayer->play();
+        qWarning() << __func__ << "step4:resetDBusMpris" << meta.localPath;
 
         //延迟设置进度
         if (INT_LAST_PROGRESS_FLAG && m_ActiveMeta.hash == meta.hash) {
@@ -275,6 +279,7 @@ void Player::playMeta(MediaMeta meta)
 
         //设置音乐播放
         emit signalPlaybackStatusChanged(Player::Playing);
+        qWarning() << __func__ << "completed" << meta.localPath;
         // 保存播放歌曲信息
         MusicSettings::setOption("base.play.last_meta", m_ActiveMeta.hash);
     } else {
@@ -876,8 +881,11 @@ void Player::setMuted(bool mute, bool sync)
 
 void Player::setActiveMeta(const MediaMeta &meta)
 {
+    qWarning() << __func__ << meta.localPath << "hash:" << meta.hash;
     m_ActiveMeta = meta;
+    qWarning() << __func__ << "emit signalMediaMetaChanged";
     emit signalMediaMetaChanged(m_ActiveMeta);
+    qWarning() << __func__ << "signalMediaMetaChanged done";
     //保存上一次播放的歌曲
     MusicSettings::setOption("base.play.last_meta", meta.hash);
     MusicSettings::setOption("base.play.last_playlist", m_currentPlayListHash.isEmpty() ? "all" : m_currentPlayListHash);
